@@ -3,11 +3,12 @@
 /** Express app for jobly. */
 
 const express = require("express");
+const session = require("express-session")
 const cors = require("cors");
 
 const { NotFoundError } = require("./expressError");
 
-const { authenticateJWT } = require("./middleware/auth");
+const { authenticateJWT, setAuthHeaderFromSession } = require("./middleware/auth");
 const authRoutes = require("./routes/auth");
 const companiesRoutes = require("./routes/companies");
 const usersRoutes = require("./routes/users");
@@ -19,7 +20,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan("tiny"));
+app.use(session({
+  secret: 'aj!76848m',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: true }
+}));
+app.use(setAuthHeaderFromSession);
 app.use(authenticateJWT);
+
 
 app.use("/auth", authRoutes);
 app.use("/companies", companiesRoutes);
