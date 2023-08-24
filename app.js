@@ -20,13 +20,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan("tiny"));
-app.use(session({
-  secret: 'aj!76848m',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: true }
-}));
-app.use(setAuthHeaderFromSession);
+// app.use(session({
+//   secret: 'aj!76848m',
+//   resave: false,
+//   saveUninitialized: true,
+//   cookie: { secure: true }
+// }));
+// app.use(setAuthHeaderFromSession);
 app.use(authenticateJWT);
 
 

@@ -27,47 +27,79 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
 }
 
 
+/** Create sql for filtering companies 
+ * queryRef is an object passed by the model that is structured like so: {
+ * 
+ *  query_parameter_name: {
+        typeValidator: (d) => { returns true if 'd' is correct data type or not undefined}, 
+        sqlComparitor: (d) => { `collum_name SQL_COMPARITOR ${d}` },
+        expectedErr: "typeValidator error message"
+        
+
+      }
+ * }
+* sqlForFiltering uses the query ref to 
+*   - validate the data with typeValidator, 
+*   - get the sql used to compare the data with sqlValidator
+*   - throw an error if data type is not accepted
+*  
+* After collecting all the resulting strings of sqlComparitor into an array, they are joined together
+* into a valid sql string. Said string is then returned to be injected into a sql query.
+*/
 
 
-function sqlForFiltering(filterData) {
+function sqlForFiltering(queryData, queryRef) {
+  if (queryData && queryRef) {
 
-  if (filterData) {
+    if (Object.keys(queryData).length != 0) {
 
-    const acceptedSearch = ['name', 'minEmployees', 'maxEmployees'];
-    const keys = Object.keys(filterData).filter((k) => acceptedSearch.includes(k));
+      let filters = [];
+      let minMax = {};
+      let params = Object.keys(queryRef)
 
-    if (filterData.maxEmployees && filterData.minEmployees) {
-      if (filterData.maxEmployees < filterData.minEmployees)
-        throw new BadRequestError('Min search value cannot be greater than max.')
-    }
+      params.forEach((p) => {
+        if (p in queryData) {
+          let value = queryData[p];
+          let refParam = queryRef[p];
 
-    if (keys.length != 0) {
-      const filters = keys.map((q) => {
-        if (q == "name") {
-          return `name ILIKE '%${filterData.name}%'`;
+          console.log(queryData[p])
+          console.log(refParam.typeValidator(value))
+
+          if (!(refParam.typeValidator(value))) {
+            throw new BadRequestError(refParam.expectedErr)
+          }
+
+          if (p.startsWith('min')) {
+            minMax['min'] = Number(value);
+          }
+
+          if (p.startsWith('max')) {
+            minMax['max'] = Number(value);
+          }
+
+          if (minMax['min'] && minMax['max']) {
+            if (minMax['min'] > minMax['max']) {
+              throw new BadRequestError('Min parameter cannot be greater than max.')
+            }
+          }
+
+          filters.push(refParam.sqlComparitor(value))
+
         }
-        if (q == "minEmployees") {
-          return `num_employees > ${filterData.minEmployees}`;
-        }
-        if (q == "maxEmployees") {
-
-          return `num_employees < ${filterData.maxEmployees}`;
-        }
-
       })
 
-      console.log(filters);
 
-      return `WHERE ${filters.join(' AND ')}`;
-
+      return `WHERE ${filters.join(' AND ')}`
     }
-  }
 
+
+  }
   return " ";
 
-
-
 }
+
+
+
 
 module.exports = { sqlForPartialUpdate, sqlForFiltering };
 

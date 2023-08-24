@@ -6,6 +6,27 @@ const jsToSql = {
     isAdmin: "is_admin"
 };
 
+const queryRef = {
+    firstName: {
+        typeValidator: (d) => { return typeof d == 'string' },
+        sqlComparitor: (d) => { return `first_name ILIKE '%${d}%'` },
+        expectedErr: "expected string from name parameter"
+
+    },
+    minAge: {
+        typeValidator: (d) => { return !isNaN(d) },
+        sqlComparitor: (d) => { return `age >= ${d}` },
+        expectedErr: "expecter number from age parameter"
+
+    },
+    maxAge: {
+        typeValidator: (d) => { return !isNaN(d) },
+        sqlComparitor: (d) => { return `age >= ${d}` },
+        expectedErr: "expecter number from age parameter"
+
+    }
+}
+
 describe("sqlForPartialUpdate", function () {
     test("Converts data to sql", function () {
 
@@ -33,17 +54,22 @@ describe("sqlForFiltering", function () {
     test("Converts data to sql", function () {
 
         const sql = sqlForFiltering({
-            minEmployees: 50,
-            name: "john"
-        })
-        expect(sql).toEqual("WHERE num_employees > 50 AND name ILIKE '%john%'")
+            minAge: 23,
+            firstName: "john"
+        }, queryRef)
+        expect(sql).toEqual("WHERE first_name ILIKE '%john%' AND age >= 23")
 
 
     })
 
     test("Throws error when max greater than min", function () {
         try {
-            sqlForPartialUpdate({ minEmployees: 200, maxEmployees: 3 })
+            sqlForFiltering({
+                minAge: 60,
+                firstName: "john",
+                maxAge: 2
+            }, queryRef)
+
             expect(true).toEqual(false)
         } catch {
             expect(true).toEqual(true)

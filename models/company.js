@@ -52,7 +52,33 @@ class Company {
 
   static async findAll(queryData) {
 
-    const sqlFilter = sqlForFiltering(queryData);
+
+    const queryRef = {
+      name: {
+        typeValidator: (d) => { return typeof d == 'string' },
+        sqlComparitor: (d) => { return `name ILIKE '%${d}%'` },
+        expectedErr: "expected string from name parameter"
+
+      },
+      minEmployees: {
+        typeValidator: (d) => { return !isNaN(d) },
+        sqlComparitor: (d) => { return `num_employees >= ${d}` },
+        expectedErr: "expecter number from minEmployee parameter"
+
+      },
+      maxEmployees: {
+        typeValidator: (d) => { return !isNaN(d) },
+        sqlComparitor: (d) => { return `num_employees <= ${d}` },
+        expectedErr: "expecter number from minEmployee parameter"
+
+      }
+    }
+
+
+
+    const sqlFilter = sqlForFiltering(queryData, queryRef);
+    console.log(sqlFilter)
+
     const companiesRes = await db.query(
       `SELECT handle,
                   name,
