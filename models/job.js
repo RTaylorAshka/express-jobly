@@ -24,7 +24,7 @@ class Job {
            WHERE handle = $1`,
             [companyHandle]);
 
-        if (!(duplicateCheck.rows[0]))
+        if (!(companyCheck.rows[0]))
             throw new BadRequestError(`Company not in database: ${handle}`);
 
         const result = await db.query(
@@ -41,7 +41,7 @@ class Job {
         );
         const job = result.rows[0];
 
-        return company;
+        return job;
     }
 
     /** Find all jobs.
@@ -85,7 +85,7 @@ class Job {
                   company_handle AS "companyHandle"
            FROM jobs
            ${sqlFilter}
-           ORDER BY companyHandle `);
+           ORDER BY company_handle `);
         return jobsRes.rows;
     }
 
@@ -101,12 +101,14 @@ class Job {
             `SELECT id,
                   title,
                   salary,
+                  equity,
                   company_handle AS "companyHandle"
            FROM jobs
            WHERE id = $1`,
             [id]);
 
         const job = jobRes.rows[0];
+        console.log('HERE:', job)
 
         if (!job) throw new NotFoundError(`No job with id: ${id}`);
 
@@ -126,10 +128,10 @@ class Job {
      */
 
     static async update(id, data) {
-        const { setCols, values } = sqlForPartialUpdate(data);
+        const { setCols, values } = sqlForPartialUpdate(data, {});
         const idVarIdx = "$" + (values.length + 1);
 
-        const querySql = `UPDATE companies 
+        const querySql = `UPDATE jobs 
                       SET ${setCols} 
                       WHERE id = ${idVarIdx} 
                       RETURNING id, 
