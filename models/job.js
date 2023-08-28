@@ -65,10 +65,9 @@ class Job {
                 expectedErr: "expecter number from minSalary parameter"
 
             },
-            maxEmployees: {
-                typeValidator: (d) => { return !isNaN(d) },
-                sqlComparitor: (d) => { return `num_employees <= ${d}` },
-                expectedErr: "expecter number from minEmployee parameter"
+            hasEquity: {
+                typeValidator: (d) => { return d == 'true' },
+                sqlComparitor: () => { return `equity > 0` }
 
             }
         }
@@ -82,6 +81,7 @@ class Job {
             `SELECT id,
                   title,
                   salary,
+                  equity,
                   company_handle AS "companyHandle"
            FROM jobs
            ${sqlFilter}

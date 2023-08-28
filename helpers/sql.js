@@ -65,7 +65,7 @@ function sqlForFiltering(queryData, queryRef) {
           console.log(queryData[p])
           console.log(refParam.typeValidator(value))
 
-          if (!(refParam.typeValidator(value))) {
+          if (!(refParam.typeValidator(value)) && refParam.expectedErr) {
             throw new BadRequestError(refParam.expectedErr)
           }
 
