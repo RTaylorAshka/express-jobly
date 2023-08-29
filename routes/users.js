@@ -54,7 +54,6 @@ router.post("/", ensurePermissions, async function (req, res, next) {
 router.get("/", ensurePermissions, async function (req, res, next) {
   try {
 
-
     const users = await User.findAll();
     return res.json({ users });
   } catch (err) {
@@ -72,8 +71,8 @@ router.get("/", ensurePermissions, async function (req, res, next) {
 
 router.get("/:username", ensurePermissions, async function (req, res, next) {
   try {
-    const user = await User.get(req.params.username);
-    return res.json({ user });
+    const { user, applied } = await User.get(req.params.username);
+    return res.json({ user, applied });
   } catch (err) {
     return next(err);
   }
@@ -100,6 +99,31 @@ router.patch("/:username", ensurePermissions, async function (req, res, next) {
 
     const user = await User.update(req.params.username, req.body);
     return res.json({ user });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+
+/** PATCH /[username] { user } => { user }
+ *
+ * Data can include:
+ *   { firstName, lastName, password, email }
+ *
+ * Returns { username, firstName, lastName, email, isAdmin }
+ *
+ * Authorization required: login
+ **/
+
+router.post("/:username/jobs/:id", ensurePermissions, async function (req, res, next) {
+  try {
+
+    await User.apply(req.params.username, req.params.id);
+    return res.status(201).json({
+      username: req.params.user,
+      job_applied: req.params.id
+    });
+
   } catch (err) {
     return next(err);
   }

@@ -6,25 +6,6 @@ const jwt = require("jsonwebtoken");
 const { SECRET_KEY } = require("../config");
 const { UnauthorizedError } = require("../expressError");
 
-/**
- * Middleware: Set Auth Header
- * 
- * If token in session, set Authorization header to token
- */
-
-function setAuthHeaderFromSession(req, res, next) {
-  try {
-    console.log('HERE!')
-    console.log(req.session.authToken)
-    if (req.session.authToken) {
-      const token = req.session.authToken;
-      res.setHeader("Authorization", `Bearer ${token}`)
-    }
-    return next();
-  } catch (err) {
-    return next();
-  }
-}
 
 /** Middleware: Authenticate user.
  *
@@ -87,6 +68,5 @@ function ensurePermissions(req, res, next) {
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
-  setAuthHeaderFromSession,
   ensurePermissions
 };

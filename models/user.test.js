@@ -133,7 +133,7 @@ describe("findAll", function () {
 
 describe("get", function () {
   test("works", async function () {
-    let user = await User.get("u1");
+    let { user, applied } = await User.get("u1");
     expect(user).toEqual({
       username: "u1",
       firstName: "U1F",
@@ -141,6 +141,16 @@ describe("get", function () {
       email: "u1@email.com",
       isAdmin: false,
     });
+    expect(applied).toEqual([
+      {
+        id: 123,
+        title: "j1",
+        salary: 110000,
+        equity: "0",
+        companyHandle: "c1"
+      }
+    ])
+
   });
 
   test("not found if no such user", async function () {
@@ -164,18 +174,18 @@ describe("update", function () {
   };
 
   test("works", async function () {
-    let job = await User.update("u1", updateData);
-    expect(job).toEqual({
+    let res = await User.update("u1", updateData);
+    expect(res).toEqual({
       username: "u1",
       ...updateData,
     });
   });
 
   test("works: set password", async function () {
-    let job = await User.update("u1", {
+    let res = await User.update("u1", {
       password: "new",
     });
-    expect(job).toEqual({
+    expect(res).toEqual({
       username: "u1",
       firstName: "U1F",
       lastName: "U1L",
@@ -208,6 +218,35 @@ describe("update", function () {
     }
   });
 });
+/************************************** apply */
+
+describe("apply", function () {
+  test("works", async function () {
+    await User.apply("u1", 456);
+    const res = await db.query(
+      "SELECT * FROM applications WHERE job_id=456");
+    expect(res.rows.length).toEqual(1);
+  });
+
+  test("not found if no such user", async function () {
+    try {
+      await User.apply("pineapple", 456);
+      fail();
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+
+  test("not found if no such job", async function () {
+    try {
+      await User.apply("u1", 846468);
+      fail();
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+});
+
 
 /************************************** remove */
 
@@ -215,7 +254,7 @@ describe("remove", function () {
   test("works", async function () {
     await User.remove("u1");
     const res = await db.query(
-        "SELECT * FROM users WHERE username='u1'");
+      "SELECT * FROM users WHERE username='u1'");
     expect(res.rows.length).toEqual(0);
   });
 

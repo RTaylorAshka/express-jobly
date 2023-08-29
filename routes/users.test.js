@@ -215,6 +215,15 @@ describe("GET /users/:username", function () {
         email: "user1@user.com",
         isAdmin: true,
       },
+      applied: [
+        {
+          id: 123,
+          title: "j1",
+          salary: 110000,
+          equity: "0",
+          companyHandle: "c1"
+        }
+      ]
     });
   });
 
@@ -336,6 +345,51 @@ test("works: set new password", async function () {
   const isSuccessful = await User.authenticate("u1", "new-password");
   expect(isSuccessful).toBeTruthy();
 
+});
+
+/************************************** POST /users/:username/jobs/:id */
+
+describe("POST /users/:username/jobs/:id", function () {
+  test("works for Admin users", async function () {
+    const resp = await request(app)
+      .post(`/users/u2/jobs/123`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.body).toEqual({ job_applied: "123" });
+  });
+
+  test("err for non-Admin users", async function () {
+    const resp = await request(app)
+      .post(`/users/u1/jobs/456`)
+      .set("authorization", `Bearer ${u2Token}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("works for non-Admin users own data", async function () {
+    const resp = await request(app)
+      .post(`/users/u2/jobs/123`)
+      .set("authorization", `Bearer ${u2Token}`);
+    expect(resp.statusCode).toEqual(201);
+  });
+
+  test("unauth for anon", async function () {
+    const resp = await request(app)
+      .post(`/users/u2/jobs/123`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("not found if user missing", async function () {
+    const resp = await request(app)
+      .post(`/users/nope/jobs/123`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(404);
+  });
+
+  test("not found if job missing", async function () {
+    const resp = await request(app)
+      .post(`/users/u1/jobs/8648454`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(404);
+  });
 });
 
 /************************************** DELETE /users/:username */

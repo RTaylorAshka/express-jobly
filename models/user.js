@@ -140,7 +140,21 @@ class User {
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
 
-    return user;
+    const applyRes = await db.query(
+      `SELECT jobs.id,
+        jobs.title, 
+        jobs.salary,
+        jobs.equity,
+        jobs.company_handle AS "companyHandle"
+      FROM applications 
+      JOIN jobs ON job_id = jobs.id
+      WHERE username = $1`,
+      [username]
+    )
+
+    const applied = applyRes.rows
+
+    return { user, applied };
   }
 
   /** Update user data with `data`.
@@ -189,6 +203,46 @@ class User {
 
     delete user.password;
     return user;
+  }
+
+  /** Add user and job to applications table, return undefined */
+
+  static async apply(username, jobId) {
+
+    const userCheck = await db.query(
+      `SELECT username
+           FROM users
+           WHERE username = $1`,
+      [username],
+    );
+
+    if (!userCheck.rows[0]) {
+      throw new NotFoundError(`No user: ${username}`);
+    }
+
+    const jobCheck = await db.query(
+      `SELECT title
+           FROM jobs
+           WHERE id = $1`,
+      [jobId],
+    );
+
+    if (!jobCheck.rows[0]) {
+      throw new NotFoundError(`No job with id: ${username}`);
+    }
+
+    let result = await db.query(
+      `INSERT INTO applications
+        (username,
+        job_id)
+        VALUES
+        ($1, $2)
+        RETURNING
+        username, job_id`,
+      [username, jobId]
+    )
+
+    return result.rows[0];
   }
 
   /** Delete given user from database; returns undefined. */

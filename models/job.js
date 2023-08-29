@@ -14,7 +14,7 @@ class Job {
      *
      * Returns { id, title, salary, equity, companyHandle }
      *
-     * Throws BadRequestError if company already in database.
+     * Throws BadRequestError if company not in database.
      * */
 
     static async create({ title, salary, equity, companyHandle }) {
@@ -75,7 +75,7 @@ class Job {
 
 
         const sqlFilter = sqlForFiltering(queryData, queryRef);
-        console.log(sqlFilter)
+
 
         const jobsRes = await db.query(
             `SELECT id,
@@ -86,6 +86,7 @@ class Job {
            FROM jobs
            ${sqlFilter}
            ORDER BY company_handle `);
+
         return jobsRes.rows;
     }
 
@@ -108,7 +109,6 @@ class Job {
             [id]);
 
         const job = jobRes.rows[0];
-        console.log('HERE:', job)
 
         if (!job) throw new NotFoundError(`No job with id: ${id}`);
 

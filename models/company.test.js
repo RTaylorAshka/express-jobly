@@ -105,7 +105,7 @@ describe("findAll", function () {
 
 describe("get", function () {
   test("works", async function () {
-    let company = await Company.get("c1");
+    let { company, jobs } = await Company.get("c1");
     expect(company).toEqual({
       handle: "c1",
       name: "C1",
@@ -113,6 +113,15 @@ describe("get", function () {
       numEmployees: 1,
       logoUrl: "http://c1.img",
     });
+    expect(jobs).toEqual([
+      {
+        id: 123,
+        title: "j1",
+        salary: 110000,
+        equity: "0",
+        companyHandle: "c1"
+      }
+    ])
   });
 
   test("not found if no such company", async function () {
