@@ -105,12 +105,9 @@ router.patch("/:username", ensurePermissions, async function (req, res, next) {
 });
 
 
-/** PATCH /[username] { user } => { user }
+/** POST /[username]/jobs/[job id] { user } => { user }
  *
- * Data can include:
- *   { firstName, lastName, password, email }
- *
- * Returns { username, firstName, lastName, email, isAdmin }
+ * 
  *
  * Authorization required: login
  **/
